@@ -289,6 +289,7 @@ a.resource-card:hover{border-color:#9fd08b;box-shadow:0 8px 20px rgba(24,82,47,.
 @keyframes vspin{to{transform:rotate(360deg)}}
 @media(max-width:650px){.viewer-frame{height:78vh;min-height:460px}.viewer-actions{margin-left:0}}
 .viewer-note{margin:8px 2px 10px;font-size:13px;color:#4c6b55}
+  .crumb{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 2px 2px;font-weight:700;color:#1f5a35}.crumb-back{background:#1b6b3a;color:#fff;text-decoration:none;padding:8px 16px;border-radius:999px;font-size:14px}.crumb-back:hover{background:#134429}
 </style>
 </head>
 <body>
@@ -605,7 +606,28 @@ const FACTORY_FOLDERS = [
 
 /* ---------- CHIA SẺ TÀI LIỆU KHÁC ---------- */
 const OTHER_FOLDERS = [
-  {name:"HSK 2.0", description:"Tài liệu ôn luyện theo hệ thống HSK 2.0", url:""},
+  {name:"HSK 2.0", description:"Tài liệu ôn luyện theo hệ thống HSK 2.0", children:[
+    {name:"HSK 1", description:"HSK 2.0 cấp 1", children:[
+      {name:"Đề thi", description:"Đề thi HSK 1", children:[
+        // {name:"Đề số 1", description:"Đề thi HSK 1 – Đề số 1", url:"hsk2/hsk1/dethi/de-so-1.html"},
+      ]}
+    ]},
+    {name:"HSK 2", description:"HSK 2.0 cấp 2", children:[
+      {name:"Đề thi", description:"Đề thi HSK 2", children:[
+        // {name:"Đề số 1", description:"Đề thi HSK 2 – Đề số 1", url:"hsk2/hsk2/dethi/de-so-1.html"},
+      ]}
+    ]},
+    {name:"HSK 3", description:"HSK 2.0 cấp 3", children:[
+      {name:"Đề thi", description:"Đề thi HSK 3", children:[
+        // {name:"Đề số 1", description:"Đề thi HSK 3 – Đề số 1", url:"hsk2/hsk3/dethi/de-so-1.html"},
+      ]}
+    ]},
+    {name:"HSK 4", description:"HSK 2.0 cấp 4", children:[
+      {name:"Đề thi", description:"Đề thi HSK 4", children:[
+        // {name:"Đề số 1", description:"Đề thi HSK 4 – Đề số 1", url:"hsk2/hsk4/dethi/de-so-1.html"},
+      ]}
+    ]}
+  ]},
   {name:"Đọc truyện", description:"Truyện ngắn và bài đọc tiếng Trung", url:""}
 ];
 
@@ -668,23 +690,49 @@ function renderResources(){
   currentItems=filtered; currentCrumb=currentLevel;
   box.innerHTML=filtered.map((item,i)=>`<a class="resource-card" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
 }
+let folderRoot=[], folderStack=[], folderEmpty=["",""];
+function currentFolderList(){ return folderStack.length?(folderStack[folderStack.length-1].children||[]):folderRoot; }
 function renderFolderList(items, emptyTitle, emptyText){
+  folderRoot=items; folderStack=[]; folderEmpty=[emptyTitle,emptyText];
+  drawFolder();
+}
+function drawFolder(){
   closeViewer();
   const box=document.getElementById("resource-list");
   const q=(document.getElementById("resource-search").value||"").toLowerCase();
-  const filtered=items.filter(x=>x.name.toLowerCase().includes(q));
+  const filtered=currentFolderList().filter(x=>x.name.toLowerCase().includes(q));
+  let crumb="";
+  if(folderStack.length){
+    crumb=`<div class="crumb" style="grid-column:1/-1"><a href="#" class="crumb-back" onclick="return folderUp()">← Quay lại</a><span>${escapeHTML(folderStack.map(f=>f.name).join("  ›  "))}</span></div>`;
+  }
   if(!filtered.length){
-    box.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🌿</div><strong>${emptyTitle}</strong><span>${emptyText}</span></div>`;
+    const t=folderStack.length?(q?"Không tìm thấy mục phù hợp":"Thư mục này đang được cập nhật"):folderEmpty[0];
+    const d=folderStack.length?"Khi có tài liệu, thêm vào mảng children của thư mục này trong phần cấu hình.":folderEmpty[1];
+    box.innerHTML=crumb+`<div class="empty-state" style="grid-column:1/-1"><div class="big">🌿</div><strong>${t}</strong><span>${d}</span></div>`;
     return;
   }
-  currentItems=filtered; currentCrumb="";
-  box.innerHTML=filtered.map((item,i)=>{
-    const inner=`<div class="resource-icon">📁</div><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.description||"Tài liệu chia sẻ")}</small></div>`;
+  currentItems=filtered; currentCrumb=folderStack.map(f=>f.name).join(" · ");
+  box.innerHTML=crumb+filtered.map((item,i)=>{
+    const sub=escapeHTML(item.description||(item.children?"Thư mục":"Tài liệu chia sẻ"));
+    if(item.children){
+      const n=item.children.length;
+      return `<a class="resource-card" href="#" onclick="return enterFolder(${i})"><div class="resource-icon">📁</div><div><strong>${escapeHTML(item.name)}</strong><small>${sub}</small></div><span class="go">${n?n+" mục ›":"Mở ›"}</span></a>`;
+    }
+    const inner=`<div class="resource-icon">📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${sub}</small></div>`;
     return item.url
       ?`<a class="resource-card" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})">${inner}<span class="go">Mở ↗</span></a>`
       :`<article class="resource-card">${inner}<small>Đang cập nhật</small></article>`;
   }).join("");
 }
+function enterFolder(i){
+  const item=currentItems[i]; if(!item||!item.children) return false;
+  folderStack.push(item);
+  document.getElementById("resource-search").value="";
+  drawFolder();
+  const top=document.getElementById("library-content"); if(top&&top.scrollIntoView) top.scrollIntoView({behavior:"smooth",block:"start"});
+  return false;
+}
+function folderUp(){ folderStack.pop(); document.getElementById("resource-search").value=""; drawFolder(); return false; }
 
 /* ---------- Xem học liệu ngay trong trang ---------- */
 let currentItems=[], currentCrumb="";
@@ -732,11 +780,7 @@ function safeURL(url){url=(url||"").trim();return(/^https?:\/\//i.test(url)||/^(
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function selectFolderFromSearch(){ if(currentFolder==="hsk")renderResources(); else selectFolder(currentFolder); }
 document.getElementById("resource-search").addEventListener("input",()=>{
-  if(currentFolder==="hsk")renderResources(); else {
-    const f=currentFolder;
-    const arr=f==="kids"?KIDS_FOLDERS:f==="factory"?FACTORY_FOLDERS:OTHER_FOLDERS;
-    renderFolderList(arr,"Không tìm thấy thư mục","Thử từ khóa khác.");
-  }
+  if(currentFolder==="hsk") renderResources(); else drawFolder();
 });
 buildLevels();
 const _f=new URLSearchParams(location.search).get("folder");
