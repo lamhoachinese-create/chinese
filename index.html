@@ -263,6 +263,31 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:#f7fff2 url
   .skill-tiles{grid-template-columns:repeat(3,1fr)}
   .subfolders{grid-template-columns:1fr 1fr}
 }
+
+/* ===== Cập nhật v4: xem học liệu ngay trong trang ===== */
+.library-content{scroll-margin-top:calc(var(--top-h,130px) + 14px)}
+a.resource-card{cursor:pointer;transition:.15s}
+a.resource-card:hover{border-color:#9fd08b;box-shadow:0 8px 20px rgba(24,82,47,.10);transform:translateY(-2px)}
+.resource-card .go{margin-left:auto;color:var(--green-700);font-size:13px;font-weight:900;white-space:nowrap}
+.viewer{display:none;margin-top:18px}
+.library-content.is-viewing .viewer{display:block}
+.library-content.is-viewing .library-top,.library-content.is-viewing #resource-list{display:none}
+.library-content.is-viewing .tabs{margin-top:0}
+.viewer-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.viewer-back{border:0;background:var(--green-900);color:#fff;font-weight:800;font-size:14px;padding:10px 18px;border-radius:999px}
+.viewer-back:hover{background:var(--green-950)}
+.viewer-bar strong{font-size:17px;color:var(--green-950)}
+.viewer-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.viewer-actions button,.viewer-actions a{border:1px solid #cfe3c6;background:#f4faf0;color:var(--green-800);font-weight:800;font-size:13px;padding:8px 14px;border-radius:999px}
+.viewer-actions button:hover,.viewer-actions a:hover{background:#e3f2dc}
+.viewer-frame{position:relative;height:clamp(520px,80vh,980px);border:1px solid #d5e8cb;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 24px rgba(24,82,47,.08)}
+.viewer-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.viewer-loading{position:absolute;inset:0;z-index:2;display:grid;place-content:center;gap:10px;text-align:center;color:#4c6b54;font-weight:700;background:#f7fcf3}
+.viewer-loading::before{content:"";width:38px;height:38px;margin:auto;border:4px solid #cfe6c3;border-top-color:var(--green-700);border-radius:50%;animation:vspin .9s linear infinite}
+.viewer-frame.loaded .viewer-loading{display:none}
+.viewer-hint{margin:10px 2px 0;font-size:13px;color:#7b8f7f}
+@keyframes vspin{to{transform:rotate(360deg)}}
+@media(max-width:650px){.viewer-frame{height:78vh;min-height:460px}.viewer-actions{margin-left:0}}
 </style>
 </head>
 <body>
@@ -393,7 +418,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:#f7fff2 url
         <button class="folder-btn" data-folder="factory" onclick="selectFolder('factory')"><span class="folder-icon">🏭</span> Công xưởng <span class="chevron">›</span></button>
         <button class="folder-btn" data-folder="other" onclick="selectFolder('other')"><span class="folder-icon">🌼</span> Chia sẻ tài liệu khác <span class="chevron">›</span></button>
       </aside>
-      <section class="library-content">
+      <section class="library-content" id="library-content">
         <div class="library-top">
           <div><h3 id="library-title">HSK 3.0</h3><p id="library-desc">Chọn cấp độ HSK và dạng học liệu bạn muốn luyện tập.</p></div>
           <input class="search-box" id="resource-search" type="search" placeholder="⌕  Tìm trong học liệu..." oninput="renderResources()">
@@ -405,6 +430,21 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:#f7fff2 url
           <button class="tab" data-tab="Đề thi" onclick="selectTab('Đề thi')">📝 Đề thi</button>
         </div>
         <div id="resource-list" class="resource-grid"></div>
+        <div id="resource-viewer" class="viewer">
+          <div class="viewer-bar">
+            <button type="button" class="viewer-back" onclick="closeViewer(true)">← Quay lại danh sách</button>
+            <strong id="viewer-title"></strong>
+            <span class="viewer-actions">
+              <button type="button" onclick="viewerFullscreen()">⛶ Toàn màn hình</button>
+              <a id="viewer-open" href="#" target="_blank" rel="noopener">Mở tab mới ↗</a>
+            </span>
+          </div>
+          <div class="viewer-frame" id="viewer-frame">
+            <div class="viewer-loading" id="viewer-loading">Đang tải học liệu...</div>
+            <iframe id="viewer-iframe" title="Học liệu" allow="autoplay; fullscreen; clipboard-write" allowfullscreen></iframe>
+          </div>
+          <p class="viewer-hint">Nếu nội dung không hiện hoặc bị chặn, bấm "Mở tab mới ↗" ở góc phải.</p>
+        </div>
       </section>
     </div>
   </section>
@@ -473,15 +513,74 @@ function add(level, tab, name, url){
 
 /* ---------- HSK 1 ---------- */
 add("HSK 1","Từ vựng","Từ vựng HSK 1 tổng hợp","hsk/hsk1/tuvung/hsk1-tuvung.html");
-// add("HSK 1","Từ vựng","Từ vựng bài 1","hsk/hsk1/tuvung/bai01.html");
-// add("HSK 1","Game từ vựng","Game từ vựng bài 1","hsk/hsk1/game/bai01.html");
-// add("HSK 1","Bài tập","Bài tập bài 1","hsk/hsk1/baitap/bai01.html");
-// add("HSK 1","Đề thi","Bài test tổng hợp cuối khóa HSK 1","hsk/hsk1/dethi/cuoikhoa.html");
+add("HSK 1","Game từ vựng","Game từ vựng bài 1","https://wordwall.net/vi/embed/dd47f7fc0d4245f0b9306c3747335c88?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 2","https://wordwall.net/vi/embed/1d41564fcc244e22854c0b38031082d7?themeId=66&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 3","https://wordwall.net/vi/embed/5c9ea0eb83204b29a812f9e58a54c2a5?themeId=46&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 4","https://wordwall.net/vi/embed/358b3e722a7141b1bcef5ce56ec2e79d?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 5","https://wordwall.net/vi/embed/9a141c772a4b47a08fa883d74ef58c4e?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 6","https://wordwall.net/vi/embed/9a141c772a4b47a08fa883d74ef58c4e?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 7","https://wordwall.net/vi/embed/af5746bfaa1349ebbaa0d6f41c4448b6?themeId=53&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 8","https://wordwall.net/vi/embed/53cf9be1dd67447790304f718d7c459f?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 9","https://wordwall.net/vi/embed/53cf9be1dd67447790304f718d7c459f?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 10","https://wordwall.net/vi/embed/3359a933904a4646832eeee89a38c5dd?themeId=46&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 11","https://wordwall.net/vi/embed/5335a78d44784562942541633b654cb9?themeId=69&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 12","https://wordwall.net/vi/embed/ff71dcc60662449eaf36bf1274417a9c?themeId=65&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 13","https://wordwall.net/vi/embed/7d77f0517c2448d9b62c8a2ef367d639?themeId=68&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 14","https://wordwall.net/vi/embed/4277d4dd628b42819351af6596fd696a?themeId=46&templateId=5&fontStackId=0");
+add("HSK 1","Game từ vựng","Game từ vựng bài 15","https://wordwall.net/vi/embed/9d6eded2aa894b2385bd6a3b960dc91e?themeId=52&templateId=5&fontStackId=0");
+add("HSK 1","Bài tập","Bài 5 · 今天我休息","hsk/hsk1/baitap/bai05.html");
+add("HSK 1","Bài tập","Bài 6 · 你的手机号码是多少？","hsk/hsk1/baitap/bai06.html");
+add("HSK 1","Bài tập","Bài 7 · 我晚上六点半下班","hsk/hsk1/baitap/bai07.html");
+add("HSK 1","Đề thi","Đề thi mô phỏng HSK 1 (3.0) – Đề số 1","hsk/hsk1/dethi/de-so-1.html");
 
 /* ---------- HSK 2 ---------- */
-// add("HSK 2","Đề thi","Bài test tổng hợp cuối khóa HSK 2","hsk/hsk2/dethi/cuoikhoa.html");
+add("HSK 2","Từ vựng","Từ vựng HSK 2 tổng hợp","hsk/hsk2/tuvung/hsk2-tuvung.html");
+add("HSK 2","Game từ vựng","Game từ vựng bài 1","https://wordwall.net/vi/embed/0315132c246b47b28e97c1d0e6d850e2?themeId=65&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 2","https://wordwall.net/vi/embed/dd5307b821284740964390e2725f4f5e?themeId=69&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 3","https://wordwall.net/vi/embed/47ac33bc202a4814aadc2fccb38b9975?themeId=68&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 4","https://wordwall.net/vi/embed/4d55da5899d141f6a10c9df87d6d3f0a?themeId=66&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 5","https://wordwall.net/vi/embed/984e522fe5d14970809d77ab3b2d6fee?themeId=43&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 6","https://wordwall.net/vi/embed/c3eb62b12a6e47cfaa94d874a62933a9?themeId=58&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 7","https://wordwall.net/vi/embed/de3a7bcc28cc46319d17b18cc29c35ef?themeId=53&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 8","https://wordwall.net/vi/embed/72271e42c8074d5d92e13df6fdba2b11?themeId=49&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 9","https://wordwall.net/vi/embed/9cac0ebd32934276a34af2ce638e22ac?themeId=46&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 10","https://wordwall.net/vi/embed/aee3e9c314474db8a5a1c7e20c3e9721?themeId=22&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 11","https://wordwall.net/vi/embed/c622798791d04156bf6e8ea285dc2a5a?themeId=55&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 12","https://wordwall.net/vi/embed/22a50829bf174f84bfef73b19011baa1?themeId=52&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 13","https://wordwall.net/vi/embed/e69b68dc655746598dbec26955a92d23?themeId=41&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 14","https://wordwall.net/vi/embed/3f63948906f44bf88e5340aec1883378?themeId=23&templateId=5&fontStackId=0");
+add("HSK 2","Game từ vựng","Game từ vựng bài 15","https://wordwall.net/vi/embed/825bdd69336344579f19f9973b4bebfd?themeId=59&templateId=5&fontStackId=0");
+add("HSK 2","Đề thi","Đề thi mô phỏng HSK 2 (3.0) – Đề số 1","hsk/hsk2/dethi/de-so-1.html");
 
-/* ---------- HSK 3 → HSK 7–9: thêm dòng add(...) tương tự ---------- */
+/* ---------- HSK 3 ---------- */
+add("HSK 3","Từ vựng","Từ vựng HSK 3 tổng hợp","hsk/hsk3/tuvung/hsk3-tuvung.html");
+add("HSK 3","Game từ vựng","Game từ vựng bài 1","https://wordwall.net/vi/embed/323f0e4faff042eb8aa6f5f8d0d46f14?themeId=65&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 2","https://wordwall.net/vi/embed/04d040eb126b4a57a00e7fb5cb8b9d77?themeId=69&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 3","https://wordwall.net/vi/embed/141d237470014c4d9dc6985fab80e5e3?themeId=66&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 4","https://wordwall.net/vi/embed/b7a04840865f4434bb115ff0bfe510a0?themeId=53&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 5","https://wordwall.net/vi/embed/6fcc5d7475a8408594af6e5ee333f366?themeId=49&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 6","https://wordwall.net/vi/embed/ec32396fb4694c54a3ab844259ee28ba?themeId=46&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 7","https://wordwall.net/vi/embed/dfc9ea6060ed498ea6f5f99a96775c0a?themeId=48&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 8","https://wordwall.net/vi/embed/3f7c5fc8eb1149a5be734e4f642f325f?themeId=55&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 9","https://wordwall.net/vi/embed/088bec53cea3411a9f4c85fdd1177127?themeId=52&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 10","https://wordwall.net/vi/embed/97107f7f28554e2194390559ee4dbf1d?themeId=41&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 11","https://wordwall.net/vi/embed/b421ac51ec6b494d987a184f7a12a929?themeId=61&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 12","https://wordwall.net/vi/embed/d8b20b0d8c784897a0f4b2b5a7a5b03c?themeId=21&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 13","https://wordwall.net/vi/embed/1608ad2e4066424c8f71678f2f8b91a7?themeId=58&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 14","https://wordwall.net/vi/embed/76ed62837fed4146a318157eee3f0d54?themeId=60&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 15","https://wordwall.net/vi/embed/3630fb9ec42e4a87bdff46c742364ee7?themeId=22&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 16","https://wordwall.net/vi/embed/5226498d020c468c8d41582285a2613e?themeId=54&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 17","https://wordwall.net/vi/embed/d40bbddbf3b444ea847a4a38febfc3b4?themeId=65&templateId=5&fontStackId=0");
+add("HSK 3","Game từ vựng","Game từ vựng bài 18","https://wordwall.net/vi/embed/7f33de47981849c3bcaa07d84fecebbb?themeId=66&templateId=5&fontStackId=0");
+
+/* ---------- HSK 4 ---------- */
+add("HSK 4","Từ vựng","Từ vựng HSK 4 tổng hợp","hsk/hsk4/tuvung/hsk4-tuvung.html");
+
+/* ---------- HSK 5 ---------- */
+
+/* ---------- HSK 6 ---------- */
+
+/* ---------- HSK 7–9 ---------- */
 
 /* ---------- TRẺ EM ---------- */
 const KIDS_FOLDERS = [
@@ -549,6 +648,7 @@ function selectTab(tab){
   renderResources();
 }
 function renderResources(){
+  closeViewer();
   if(currentFolder!=="hsk") return;
   const list=(RESOURCES[currentLevel]&&RESOURCES[currentLevel][currentTab])||[];
   const q=(document.getElementById("resource-search").value||"").toLowerCase();
@@ -558,9 +658,11 @@ function renderResources(){
     box.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🌱</div><strong>${q?"Không tìm thấy tài liệu phù hợp":"Học liệu đang được cập nhật"}</strong><span>Danh mục ${currentLevel} · ${currentTab}. Khi có tài liệu, chỉ cần thêm tên và link vào phần RESOURCES trong code.</span></div>`;
     return;
   }
-  box.innerHTML=filtered.map(item=>`<article class="resource-card"><div class="resource-icon">📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><a href="${safeURL(item.url)}" target="_blank" rel="noopener">Mở ↗</a></article>`).join("");
+  currentItems=filtered; currentCrumb=currentLevel;
+  box.innerHTML=filtered.map((item,i)=>`<a class="resource-card" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
 }
 function renderFolderList(items, emptyTitle, emptyText){
+  closeViewer();
   const box=document.getElementById("resource-list");
   const q=(document.getElementById("resource-search").value||"").toLowerCase();
   const filtered=items.filter(x=>x.name.toLowerCase().includes(q));
@@ -568,7 +670,56 @@ function renderFolderList(items, emptyTitle, emptyText){
     box.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🌿</div><strong>${emptyTitle}</strong><span>${emptyText}</span></div>`;
     return;
   }
-  box.innerHTML=filtered.map(item=>`<article class="resource-card"><div class="resource-icon">📁</div><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.description||"Tài liệu chia sẻ")}</small></div>${item.url?`<a href="${safeURL(item.url)}" target="_blank" rel="noopener">Mở ↗</a>`:"<small>Đang cập nhật</small>"}</article>`).join("");
+  currentItems=filtered; currentCrumb="";
+  box.innerHTML=filtered.map((item,i)=>{
+    const inner=`<div class="resource-icon">📁</div><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.description||"Tài liệu chia sẻ")}</small></div>`;
+    return item.url
+      ?`<a class="resource-card" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})">${inner}<span class="go">Mở ↗</span></a>`
+      :`<article class="resource-card">${inner}<small>Đang cập nhật</small></article>`;
+  }).join("");
+}
+
+/* ---------- Xem học liệu ngay trong trang ---------- */
+let currentItems=[], currentCrumb="";
+const NO_EMBED_HOSTS=["drive.google.com","docs.google.com","facebook.com","fb.com","youtube.com","youtu.be","zalo.me","t.me"];
+function canEmbed(url){
+  url=(url||"").trim(); if(!url) return false;
+  if(!/^https?:\/\//i.test(url)) return true;            // file nằm trong repo
+  try{
+    const u=new URL(url), h=u.hostname.replace(/^www\./,"");
+    if(NO_EMBED_HOSTS.some(b=>h===b||h.endsWith("."+b))) return /\/(preview|embed)(\/|$|\?)/.test(u.pathname+u.search);
+  }catch(e){return false}
+  return true;
+}
+function openItem(e,i){
+  const item=currentItems[i]; if(!item) return true;
+  if(e&&(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1)) return true;   // giữ hành vi mở tab mới
+  if(!canEmbed(item.url)) return true;                                    // trang chặn nhúng: mở tab mới
+  const url=safeURL(item.url);
+  const frame=document.getElementById("viewer-frame"), ifr=document.getElementById("viewer-iframe");
+  frame.classList.remove("loaded");
+  ifr.onload=function(){ if(ifr.getAttribute("src")!=="about:blank") frame.classList.add("loaded"); };
+  ifr.setAttribute("src",url);
+  document.getElementById("viewer-title").textContent=item.name+(currentCrumb?" · "+currentCrumb:"");
+  document.getElementById("viewer-open").setAttribute("href",url);
+  const box=document.getElementById("library-content");
+  box.classList.add("is-viewing");
+  if(box.scrollIntoView) box.scrollIntoView({behavior:"smooth",block:"start"});
+  if(e&&e.preventDefault) e.preventDefault();
+  return false;
+}
+function closeViewer(scroll){
+  const box=document.getElementById("library-content"); if(!box) return;
+  if(!box.classList.contains("is-viewing")&&!scroll) return;
+  box.classList.remove("is-viewing");
+  const ifr=document.getElementById("viewer-iframe");
+  if(ifr){ ifr.setAttribute("src","about:blank"); }
+  if(scroll&&box.scrollIntoView) box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function viewerFullscreen(){
+  const ifr=document.getElementById("viewer-iframe");
+  const f=ifr.requestFullscreen||ifr.webkitRequestFullscreen;
+  if(f) f.call(ifr);
 }
 function safeURL(url){url=(url||"").trim();return(/^https?:\/\//i.test(url)||/^(?![a-z][a-z0-9+.-]*:)(?!\/\/)\S+$/i.test(url))?url:"#";}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
