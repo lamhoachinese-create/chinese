@@ -627,10 +627,9 @@ const OTHER_FOLDERS = [
         {name:"Đề số 2", description:"Đề thi HSK 1 – Đề số 2", url:"hsk20/hsk1/dethi/de-so-2.html"},
         {name:"Đề số 3", description:"Đề thi HSK 1 – Đề số 3", url:"hsk20/hsk1/dethi/de-so-3.html"},
          {name:"Đề số 4", description:"Đề thi HSK 1 – Đề số 4", url:"hsk20/hsk1/dethi/de-so-4.html"},
-        {name:"Đề số 5", description:"Đề thi HSK 1 – Đề số 5", url:"hsk2/hsk1/dethi/de-so-5.html"},
-        {name:"Đề số 6", description:"Đề thi HSK 1 – Đề số 6", url:"hsk2/hsk1/dethi/de-so-6.html"},
-        {name:"Đề số 7", description:"Đề thi HSK 1 – Đề số 7", url:"hsk2/hsk1/dethi/de-so-7.html"}
-      ]}
+        {name:"Đề số 5", description:"Đề thi HSK 1 – Đề số 5", url:"hsk20/hsk1/dethi/de-so-5.html"},
+        {name:"Đề số 6", description:"Đề thi HSK 1 – Đề số 6", url:"hsk20/hsk1/dethi/de-so-6.html"},
+        {name:"Đề số 7", description:"Đề thi HSK 1 – Đề số 7", url:"hsk20/hsk1/dethi/de-so-7.html"}
     ]},
     {name:"HSK 2", description:"HSK 2.0 cấp 2", children:[
       {name:"Đề thi", description:"Đề thi HSK 2", children:[
@@ -708,8 +707,9 @@ function renderResources(){
     return;
   }
   currentItems=filtered; currentCrumb=currentLevel;
-    const TS={"Từ vựng":["📖","rc-blue"],"Game từ vựng":["🎮","rc-purple"],"Bài tập":["✏️","rc-orange"],"Đề thi":["📝","rc-red"]}, st=TS[currentTab]||["📄","rc-orange"];
-  box.innerHTML=filtered.map((item,i)=>`<a class="resource-card ${st[1]}" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">${st[0]}</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
+  const TS={"Từ vựng":["📖","rc-blue"],"Game từ vựng":["🎮","rc-purple"],"Bài tập":["✏️","rc-orange"],"Đề thi":["📝","rc-red"]};
+  const st=TS[currentTab]||["📄","rc-orange"];
+  box.innerHTML=filtered.map((item,i)=>`<a class="resource-card ${st[1]}" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">${st[0]}</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
 }
 let folderRoot=[], folderStack=[], folderEmpty=["",""];
 function currentFolderList(){ return folderStack.length?(folderStack[folderStack.length-1].children||[]):folderRoot; }
