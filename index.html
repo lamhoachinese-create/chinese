@@ -290,6 +290,20 @@ a.resource-card:hover{border-color:#9fd08b;box-shadow:0 8px 20px rgba(24,82,47,.
 @media(max-width:650px){.viewer-frame{height:78vh;min-height:460px}.viewer-actions{margin-left:0}}
 .viewer-note{margin:8px 2px 10px;font-size:13px;color:#4c6b55}
   .crumb{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 2px 2px;font-weight:700;color:#1f5a35}.crumb-back{background:#1b6b3a;color:#fff;text-decoration:none;padding:8px 16px;border-radius:999px;font-size:14px}.crumb-back:hover{background:#134429}
+/* ===== Nổi bật menu + thẻ học liệu ===== */
+.nav-link.active{background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;box-shadow:0 6px 14px rgba(234,88,12,.35)}
+.nav-link.active:hover{background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff}
+.resource-card{--rc:#c2410c;--rc-soft:#ffedd5;--rc-line:#fdba74;padding:20px 22px;gap:16px;border:2px solid var(--rc-line);background:linear-gradient(135deg,var(--rc-soft),#fff 70%);border-radius:18px}
+.rc-blue{--rc:#1d4ed8;--rc-soft:#dbeafe;--rc-line:#93c5fd}
+.rc-purple{--rc:#7e22ce;--rc-soft:#f3e8ff;--rc-line:#d8b4fe}
+.rc-orange{--rc:#c2410c;--rc-soft:#ffedd5;--rc-line:#fdba74}
+.rc-red{--rc:#be123c;--rc-soft:#ffe4e6;--rc-line:#fda4af}
+.resource-card strong{font-size:19px;line-height:1.35;font-weight:850;color:var(--rc)}
+.resource-card small{font-size:14px;font-weight:700;color:#5b6b60}
+.resource-icon{width:60px;height:60px;border-radius:18px;font-size:34px;background:var(--rc);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.resource-card .go{font-size:15px;font-weight:850;color:#fff;background:var(--rc);padding:9px 16px;border-radius:999px}
+a.resource-card:hover{border-color:var(--rc);box-shadow:0 12px 26px rgba(0,0,0,.14);transform:translateY(-3px)}
+@media(max-width:650px){.resource-card{padding:16px}.resource-card strong{font-size:17px}.resource-icon{width:52px;height:52px;font-size:28px}}
 </style>
 </head>
 <body>
@@ -694,7 +708,8 @@ function renderResources(){
     return;
   }
   currentItems=filtered; currentCrumb=currentLevel;
-  box.innerHTML=filtered.map((item,i)=>`<a class="resource-card" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
+    const TS={"Từ vựng":["📖","rc-blue"],"Game từ vựng":["🎮","rc-purple"],"Bài tập":["✏️","rc-orange"],"Đề thi":["📝","rc-red"]}, st=TS[currentTab]||["📄","rc-orange"];
+  box.innerHTML=filtered.map((item,i)=>`<a class="resource-card ${st[1]}" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">${st[0]}</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");📄</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
 }
 let folderRoot=[], folderStack=[], folderEmpty=["",""];
 function currentFolderList(){ return folderStack.length?(folderStack[folderStack.length-1].children||[]):folderRoot; }
