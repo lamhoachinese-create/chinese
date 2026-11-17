@@ -816,7 +816,8 @@ function selectTab(tab){
 function renderResources(){
   closeViewer();
   if(currentFolder!=="hsk") return;
-  const list=(RESOURCES[currentLevel]&&RESOURCES[currentLevel][currentTab])||[];
+  const raw=(RESOURCES[currentLevel]&&RESOURCES[currentLevel][currentTab])||[];
+  const list=buildSlots(raw);
   const q=(document.getElementById("resource-search").value||"").toLowerCase();
   const filtered=list.filter(x=>x.name.toLowerCase().includes(q));
   const box=document.getElementById("resource-list");
@@ -827,7 +828,16 @@ function renderResources(){
   currentItems=filtered; currentCrumb=currentLevel;
   const TS={"Từ vựng":["📖","rc-blue"],"Game từ vựng":["🎮","rc-purple"],"Bài tập":["✏️","rc-orange"],"Đề thi":["📝","rc-red"]};
   const st=TS[currentTab]||["📄","rc-orange"];
-  box.innerHTML=filtered.map((item,i)=>`<a class="resource-card ${st[1]}" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">${st[0]}</div><div><strong>${escapeHTML(item.name)}</strong><small>${currentLevel} · ${currentTab}</small></div><span class="go">Mở ↗</span></a>`).join("");
+  box.innerHTML=filtered.map((item,i)=>{
+    const sub=`${currentLevel} · ${currentTab}`;
+    if(item.locked && !isAdmin){
+      return `<a class="resource-card ${st[1]} rc-locked" href="#" onclick="return showLock(${i})"><div class="resource-icon">🔒</div><div><strong>${escapeHTML(item.name)}</strong><small>${sub} · Dành cho học viên</small></div><span class="go">🔒 Khóa</span></a>`;
+    }
+    if(!item.url){
+      return `<article class="resource-card ${st[1]} rc-empty"><div class="resource-icon">${st[0]}</div><div><strong>${escapeHTML(item.name)}</strong><small>${sub}</small></div><small>Đang cập nhật</small></article>`;
+    }
+    return `<a class="resource-card ${st[1]}" href="${safeURL(item.url)}" target="_blank" rel="noopener" onclick="return openItem(event,${i})"><div class="resource-icon">${st[0]}</div><div><strong>${escapeHTML(item.name)}</strong><small>${sub}${item.locked?" · 🔓 Admin":""}</small></div><span class="go">Mở ↗</span></a>`;
+  }).join("");
 }
 let folderRoot=[], folderStack=[], folderEmpty=["",""];
 function currentFolderList(){ return folderStack.length?(folderStack[folderStack.length-1].children||[]):folderRoot; }
