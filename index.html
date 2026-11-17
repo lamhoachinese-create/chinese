@@ -304,6 +304,11 @@ a.resource-card:hover{border-color:#9fd08b;box-shadow:0 8px 20px rgba(24,82,47,.
 .resource-card .go{font-size:15px;font-weight:850;color:#fff;background:var(--rc);padding:9px 16px;border-radius:999px}
 a.resource-card:hover{border-color:var(--rc);box-shadow:0 12px 26px rgba(0,0,0,.14);transform:translateY(-3px)}
 @media(max-width:650px){.resource-card{padding:16px}.resource-card strong{font-size:17px}.resource-icon{width:52px;height:52px;font-size:28px}}
+/* ===== Chia trang theo tab menu ===== */
+[hidden]{display:none!important}
+main .section{padding-top:8px}
+main .contact-banner{margin-top:8px}
+@media(max-width:650px){main .section{padding-top:4px}}
 </style>
 </head>
 <body>
@@ -489,18 +494,47 @@ a.resource-card:hover{border-color:var(--rc);box-shadow:0 12px 26px rgba(0,0,0,.
   measure(); onScroll();
   addEventListener('resize',measure); addEventListener('load',measure);
   addEventListener('scroll',onScroll,{passive:true});
-  // Tô sáng mục menu theo vị trí cuộn (luôn đúng mục đang xem)
-  const links=[...document.querySelectorAll('.nav-link[href^="#"]')];
-  const secs=links.map(a=>document.getElementById(a.getAttribute('href').slice(1)));
-  function spy(){
-    const line=(parseFloat(getComputedStyle(root).getPropertyValue('--top-h'))||130)+Math.min(160,innerHeight*0.25);
-    let idx=0;
-    secs.forEach((el,i)=>{ if(el&&el.getBoundingClientRect().top<=line) idx=i; });
-    if(innerHeight+scrollY>=document.documentElement.scrollHeight-4) idx=secs.length-1;
-    links.forEach((l,i)=>l.classList.toggle('active',i===idx));
+
+  /* ===== Mỗi mục menu = một trang riêng ===== */
+  const PAGES={
+    home:["top"],
+    about:["about","features"],
+    courses:["courses"],
+    library:["library"],
+    contact:["contact"]
+  };
+  const ID2PAGE={};
+  Object.keys(PAGES).forEach(p=>PAGES[p].forEach(id=>ID2PAGE[id]=p));
+  const ALL=Object.keys(ID2PAGE);
+
+  function showPage(p,goTop){
+    if(!PAGES[p]) p="home";
+    ALL.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.hidden=!PAGES[p].includes(id);
+    });
+    document.querySelectorAll('.nav-link').forEach(a=>{
+      const id=(a.getAttribute('href')||'').slice(1);
+      a.classList.toggle('active',ID2PAGE[id]===p);
+    });
+    if(goTop) window.scrollTo({top:0,behavior:'auto'});
+    onScroll();
   }
-  addEventListener('scroll',spy,{passive:true}); addEventListener('resize',spy); addEventListener('load',spy); spy();
+  document.addEventListener('click',function(e){
+    const a=e.target.closest('a[href^="#"]'); if(!a) return;
+    const id=a.getAttribute('href').slice(1);
+    if(!ID2PAGE[id]) return;
+    e.preventDefault();
+    showPage(ID2PAGE[id],true);
+    history.pushState(null,'','#'+id);
+  });
+  addEventListener('popstate',function(){
+    const id=location.hash.slice(1);
+    showPage(ID2PAGE[id]||'home',true);
+  });
+  showPage(ID2PAGE[location.hash.slice(1)]||'home',false);
 })();
+</script>
 </script>
 <script>
 /* =========================================================
