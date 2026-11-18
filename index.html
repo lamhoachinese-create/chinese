@@ -574,24 +574,8 @@ main .contact-banner{margin-top:8px}
 </script>
   
 <script>
-/* =========================================================
-   KHU VỰC CẬP NHẬT HỌC LIỆU
-   Chỉ cần thay link mẫu bằng link Google Drive/website thật.
-   Có thể thêm mục mới bằng cách sao chép một dòng trong mảng.
-   ========================================================= */
-/* =========================================================
-   KHU VỰC CẬP NHẬT HỌC LIỆU - CHỈ CẦN SỬA PHẦN NÀY
-   ---------------------------------------------------------
-   1) HSK: mỗi dòng add(...) là một thẻ học liệu
-        add("Cấp HSK", "Tab", "Tên hiển thị", "đường dẫn hoặc link");
-      - Cấp HSK: "HSK 1" ... "HSK 6", "HSK 7–9"
-      - Tab: "Từ vựng" | "Game từ vựng" | "Bài tập" | "Đề thi"
-      - Đường dẫn: file trong repo (vd: hsk/hsk1/baitap/bai01.html)
-        hoặc link đầy đủ (Google Drive, website...)
-   2) Trẻ em / Công xưởng / Khác: thêm một dòng {name, description, url}
-      vào mảng tương ứng. Để url:"" thì thẻ hiện "Đang cập nhật".
-   Dòng nào bắt đầu bằng // là dòng ví dụ (không có tác dụng).
-   ========================================================= */
+<script>
+// KHU VUC CAP NHAT HOC LIEU: dung add("HSK 1","Bai tap","Ten bai","duong-dan");
 const RESOURCES = {};
 ["HSK 1","HSK 2","HSK 3","HSK 4","HSK 5","HSK 6","HSK 7–9"].forEach(l=>{
   RESOURCES[l] = {"Từ vựng":[], "Game từ vựng":[], "Bài tập":[], "Đề thi":[]};
