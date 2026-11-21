@@ -457,9 +457,12 @@ main .contact-banner{margin-top:8px}
         <div class="sidebar-title">DANH MỤC CHÍNH</div>
         <button class="folder-btn active" data-folder="hsk" onclick="selectFolder('hsk')"><span class="folder-icon">📗</span> HSK 3.0 <span class="chevron">›</span></button>
         <div class="subfolders" id="hsk-subfolders"></div>
-        <button class="folder-btn" data-folder="kids" onclick="selectFolder('kids')"><span class="folder-icon">🧸</span> Trẻ em <span class="chevron">›</span></button>
+               <button class="folder-btn" data-folder="kids" onclick="selectFolder('kids')"><span class="folder-icon">🧸</span> Trẻ em <span class="chevron">›</span></button>
+        <div class="subfolders" id="kids-subfolders" hidden></div>
         <button class="folder-btn" data-folder="factory" onclick="selectFolder('factory')"><span class="folder-icon">🏭</span> Công xưởng <span class="chevron">›</span></button>
+        <div class="subfolders" id="factory-subfolders" hidden></div>
         <button class="folder-btn" data-folder="other" onclick="selectFolder('other')"><span class="folder-icon">🌼</span> Chia sẻ tài liệu khác <span class="chevron">›</span></button>
+        <div class="subfolders" id="other-subfolders" hidden></div>
       </aside>
       <section class="library-content" id="library-content">
         <div class="library-top">
@@ -756,39 +759,63 @@ function tryAdmin(){
 }
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeLock(); });
 let currentFolder="hsk", currentLevel="HSK 1", currentTab="Từ vựng";
+/* Thư mục con hiển thị ở cột trái cho Trẻ em / Công xưởng / Chia sẻ tài liệu khác */
+const SUB_DATA = {kids:KIDS_FOLDERS, factory:FACTORY_FOLDERS, other:OTHER_FOLDERS};
+const SUB_TITLE = {kids:"Tiếng Trung trẻ em", factory:"Tiếng Trung công xưởng", other:"Chia sẻ tài liệu khác"};
+const SUB_EMPTY = {
+  kids:["Thư mục này đang được cập nhật","Thêm link hoặc children vào mục tương ứng trong mảng KIDS_FOLDERS."],
+  factory:["Thư mục này đang được cập nhật","Thêm link hoặc children vào mục tương ứng trong mảng FACTORY_FOLDERS."],
+  other:["Thư mục này đang được cập nhật","Thêm link hoặc children vào mục tương ứng trong mảng OTHER_FOLDERS."]
+};
+const currentSub = {kids:0, factory:0, other:0};
+
 function buildLevels(){
   document.getElementById("hsk-subfolders").innerHTML=LEVELS.map(l=>
     `<button type="button" data-level="${escapeHTML(l)}" onclick="selectFolder('hsk','${l}')">${escapeHTML(l)}${LEVEL_NOTE[l]?`<small>${escapeHTML(LEVEL_NOTE[l])}</small>`:""}</button>`
   ).join("");
+  Object.keys(SUB_DATA).forEach(f=>{
+    document.getElementById(f+"-subfolders").innerHTML=SUB_DATA[f].map((it,i)=>{
+      const n=it.children?it.children.length:0;
+      return `<button type="button" data-sub="${i}" onclick="selectFolder('${f}',${i})">${escapeHTML(it.name)}${n?`<small>${n} mục</small>`:""}</button>`;
+    }).join("");
+  });
 }
 function markLevel(){
   document.querySelectorAll("#hsk-subfolders button").forEach(b=>b.classList.toggle("active",currentFolder==="hsk"&&b.dataset.level===currentLevel));
+  Object.keys(SUB_DATA).forEach(f=>{
+    document.querySelectorAll("#"+f+"-subfolders button").forEach(b=>
+      b.classList.toggle("active",currentFolder===f&&Number(b.dataset.sub)===currentSub[f]));
+  });
 }
-function selectFolder(folder, level){
+function selectFolder(folder, arg){
   currentFolder=folder;
   document.querySelectorAll(".folder-btn").forEach(b=>b.classList.toggle("active",b.dataset.folder===folder));
-  const tabs=document.getElementById("resource-tabs"), subs=document.getElementById("hsk-subfolders");
+  ["hsk","kids","factory","other"].forEach(f=>{ document.getElementById(f+"-subfolders").hidden=(f!==folder); });
+  const tabs=document.getElementById("resource-tabs");
   const title=document.getElementById("library-title"), desc=document.getElementById("library-desc");
-  subs.hidden=(folder!=="hsk");
+  document.getElementById("resource-search").value="";
   if(folder==="hsk"){
     tabs.style.display="flex";
-    if(level) currentLevel=level;
+    if(arg) currentLevel=arg;
     title.textContent="HSK 3.0 · "+currentLevel;
     desc.textContent="Chọn dạng học liệu của "+currentLevel+" bên dưới.";
     markLevel(); renderResources();
   }else{
-    tabs.style.display="none"; markLevel();
-    currentTab="";
-    if(folder==="kids"){
-      title.textContent="Tiếng Trung trẻ em"; desc.textContent="Khu vực dành cho YCT và Easy Steps to Chinese. Có thể thêm thư mục mới bất cứ lúc nào.";
-      renderFolderList(KIDS_FOLDERS,"Chưa có thư mục trẻ em","Khi có học liệu, thêm thư mục vào mảng KIDS_FOLDERS trong phần cấu hình cuối file.");
-    }else if(folder==="factory"){
-      title.textContent="Tiếng Trung công xưởng"; desc.textContent="Tài liệu thực tiễn theo bộ phận và vị trí công việc.";
-      renderFolderList(FACTORY_FOLDERS,"Chưa cập nhật tài liệu công xưởng","Thêm tên thư mục và đường link Google Drive trong mảng FACTORY_FOLDERS.");
-    }else{
-      title.textContent="Chia sẻ tài liệu khác"; desc.textContent="Các nguồn học liệu mở rộng của Hán Ngữ Lâm Hoa.";
-      renderFolderList(OTHER_FOLDERS,"Chưa có tài liệu","Thêm đường link vào mảng OTHER_FOLDERS để hiển thị tài liệu.");
+    tabs.style.display="none"; currentTab="";
+    const list=SUB_DATA[folder];
+    if(typeof arg==="number") currentSub[folder]=arg;
+    currentSub[folder]=Math.max(0,Math.min(currentSub[folder],list.length-1));
+    const item=list[currentSub[folder]];
+    markLevel();
+    if(!item){
+      title.textContent=SUB_TITLE[folder]; desc.textContent="";
+      renderFolderList([],SUB_EMPTY[folder][0],SUB_EMPTY[folder][1]);
+      return;
     }
+    title.textContent=SUB_TITLE[folder]+" · "+item.name;
+    desc.textContent=item.description||"";
+    const items=item.children||(item.url?[{name:item.name,description:item.description,url:item.url}]:[]);
+    renderFolderList(items,SUB_EMPTY[folder][0],SUB_EMPTY[folder][1]);
   }
 }
 function selectTab(tab){
