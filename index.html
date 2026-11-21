@@ -330,6 +330,20 @@ main .contact-banner{margin-top:8px}
 .lock-admin input:focus{border-color:var(--green-500)}
 .lock-admin button{border:0;background:var(--green-900);color:#fff;font-weight:800;padding:10px 16px;border-radius:999px}
 #lock-msg{min-height:20px;margin-top:8px;font-size:13px;font-weight:700;color:#be123c}
+
+  /* ===== Thư mục con: tách màu khỏi thư mục chính ===== */
+.subfolders{margin:2px 0 12px 16px;padding:6px 0 6px 12px;gap:6px;border-left:3px solid #f5c26b}
+.subfolders button{
+  padding:8px 12px;border:1px solid #f3dfb5;background:#fffaf0;border-radius:10px;
+  font-size:14px;font-weight:750;color:#8a5a12;box-shadow:none
+}
+.subfolders button small{font-size:11px;font-weight:700;color:#b58a45}
+.subfolders button:hover{background:#fff1d1;border-color:#eab75a;color:#a35a00}
+.subfolders button.active{
+  background:linear-gradient(135deg,#f59e0b,#ea580c);border-color:#ea580c;color:#fff;
+  box-shadow:0 6px 14px rgba(234,88,12,.28)
+}
+.subfolders button.active small{color:#ffe9c7}
 </style>
 </head>
 <body>
@@ -797,6 +811,12 @@ function selectFolder(folder, arg){
   if(folder==="hsk"){
     tabs.style.display="flex";
     if(arg) currentLevel=arg;
+    if(!currentTab) currentTab="Từ vựng";   // mặc định về tab Từ vựng
+    document.querySelectorAll("#resource-tabs .tab").forEach(b=>
+      b.classList.toggle("active",b.dataset.tab===currentTab));
+    if(!currentTab) currentTab="Từ vựng";   // mặc định về tab Từ vựng
+    document.querySelectorAll("#resource-tabs .tab").forEach(b=>
+      b.classList.toggle("active",b.dataset.tab===currentTab));
     title.textContent="HSK 3.0 · "+currentLevel;
     desc.textContent="Chọn dạng học liệu của "+currentLevel+" bên dưới.";
     markLevel(); renderResources();
